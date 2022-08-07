@@ -34,7 +34,7 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
             return scheme_spform(expr.first, expr.rest, env)
         operator = scheme_eval(expr.first, env)
         if isinstance(operator, MacroProcedure):
-            return scheme_apply(operator, expr.rest)
+            return scheme_apply(operator, expr.rest, env)
         return scheme_apply(operator, expr.rest.map(lambda x: scheme_eval(x, env)), env)
 
 
