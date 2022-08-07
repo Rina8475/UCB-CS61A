@@ -68,7 +68,7 @@
          )
         ((quoted? expr)
          ; BEGIN PROBLEM 7
-         (list 'quoted (let-to-lambda (cadr expr)))
+         expr
          ; END PROBLEM 7
          )
         ((or (lambda? expr)
@@ -86,8 +86,8 @@
                (body   (cddr expr)))
            ; BEGIN PROBLEM 7
            (define args (zip values))
-           ; `((lambda ,(car args) ,@(map let-to-lambda body)) ,@(cadr args))
-           (cons (cons 'lambda (cons (car args) (map let-to-lambda body))) (cadr args))
+           ; `((lambda ,(car args) ,@(map let-to-lambda body)) ,@(map let-to-lambda (cadr args)))
+           (cons (cons 'lambda (cons (car args) (map let-to-lambda body))) (map let-to-lambda (cadr args)))
            ; END PROBLEM 7
            ))
         (else

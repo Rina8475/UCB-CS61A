@@ -32,8 +32,10 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
     if isinstance(expr, Pair):
         if isinstance(expr.first, str) and expr.first in SPECIAL_FORMS:     # if special form
             return scheme_spform(expr.first, expr.rest, env)
-        return scheme_apply(scheme_eval(expr.first, env), \
-            expr.rest, env)
+        operator = scheme_eval(expr.first, env)
+        if isinstance(operator, MacroProcedure):
+            return scheme_apply(operator, expr.rest)
+        return scheme_apply(operator, expr.rest.map(lambda x: scheme_eval(x, env)), env)
 
 
 def scheme_spform(keyword, expr, env):
@@ -177,16 +179,16 @@ def scheme_apply(procedure, args, env):
     """Apply Scheme PROCEDURE to argument values ARGS (a Scheme list) in
     environment ENV."""
     # PROBLEM 2
-    feval = lambda x: scheme_eval(x, env)
     if isinstance(procedure, BuiltinProcedure):
-        return procedure.apply(args.map(feval), env)
+        return procedure.apply(args, env)
     if isinstance(procedure, LambdaProcedure):
-        return procedure.apply(args.map(feval))
+        return procedure.apply(args)
     if isinstance(procedure, MuProcedure):
-        return procedure.apply(args.map(feval), env)
+        return procedure.apply(args, env)
     if isinstance(procedure, MacroProcedure):
         return procedure.apply(args, env)
-    raise SchemeError(f'{procedure}, {args}, {env}')
+    raise SchemeError(f'scheme_apply error: procedure: {procedure}, procedure_type: {type(procedure)}, \
+         {args}, {env}')
 
 
 
@@ -357,10 +359,7 @@ class MacroProcedure(Procedure):
         if len(args) != len(self.formals):
             raise SchemeError(f'MacroProcedure args dismatch, {args}')
         subframe = self.env.create_subframe(self.formals, args)
-
-        print("Hello", subframe)
-        temp = scheme_eval(self.body, subframe)
-        print(temp)
+        temp = scheme_spform('begin', self.body, subframe)
         return scheme_eval(temp, cur_env)
 
     def __str__(self):
