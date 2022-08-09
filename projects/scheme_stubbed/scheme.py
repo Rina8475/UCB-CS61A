@@ -24,8 +24,7 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
     4
     """
     # PROBLEM 2
-    if isinstance(expr, int) or isinstance(expr, float) or isinstance(expr, bool) \
-        or expr is nil:             # base case 1
+    if slef_evaluate(expr):             # base case 1
         return expr
     if isinstance(expr, str):       # base case 2
         return env.get_symbol(expr)
@@ -36,6 +35,12 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
         if isinstance(operator, MacroProcedure):
             return scheme_apply(operator, expr.rest, env)
         return scheme_apply(operator, expr.rest.map(lambda x: scheme_eval(x, env)), env)
+    raise SchemeError(f'expr: {expr}, env: {env}')
+
+def slef_evaluate(expr):
+    """If the value of evaluating the expresion EXPR is itself."""
+    return isinstance(expr, int) or isinstance(expr, float) or \
+           isinstance(expr, bool) or expr is nil or expr is None
 
 
 def scheme_spform(keyword, expr, env):
@@ -51,10 +56,7 @@ def scheme_spform(keyword, expr, env):
     if keyword == 'begin':
         if len(expr) == 0:
             raise SyntaxError
-        while expr is not nil:
-            val = scheme_eval(expr.first, env)
-            expr = expr.rest
-        return val
+        return eval_all(expr, env)
     if keyword == 'lambda':
         if len(expr) > 1 and valid_formal(expr.first):
             return LambdaProcedure(expr.first, expr.rest, env)
@@ -101,15 +103,23 @@ def scheme_define(expr, env):
         return env.define(first.first, LambdaProcedure(first.rest, body, env))
     raise SchemeError
 
+def eval_all(expr, env):
+    """Evaluate all the scheme expression in EXPR with ENV, and return 
+    the value of the last expression in EXPR. Assume the expr is not a 
+    empty scheme list"""
+    if expr.rest is nil:
+        return scheme_eval(expr.first, env, True)       # Tail context
+    scheme_eval(expr.first, env)
+    return eval_all(expr.rest, env)
 
 def scheme_if(expr, env):
     """Do the special form 'if' in the Scheme
     Assume the expr is the Scheme list"""
     predicate, consequent, alter = expr.first, expr.rest.first, expr.rest.rest
     if not is_scheme_false(scheme_eval(predicate, env)):
-        return scheme_eval(consequent, env)
+        return scheme_eval(consequent, env, True)       # Tail context
     elif alter is not nil:
-        return scheme_eval(alter.first, env)
+        return scheme_eval(alter.first, env, True)      # Tail context
     return scheme_eval('undefined', env)
 
 
@@ -167,9 +177,9 @@ def scheme_andor(flag, expr, env):
     """Evaluate the value of special from 'and', 'or'
     if the keyword is and, then the flag is True
     if the keyword is or, then the flag is False"""
-    value = scheme_eval(expr.first, env)
     if len(expr) == 1:
-        return value
+        return scheme_eval(expr.first, env, True)       # Tail context
+    value = scheme_eval(expr.first, env)
     if (not is_scheme_false(value)) == flag:
         return scheme_andor(flag, expr.rest, env)
     return value
@@ -323,6 +333,7 @@ class LambdaProcedure(Procedure):
             raise SchemeError
         env = self.env.create_subframe(self.formals, args)
         return scheme_spform('begin', self.body, env)
+
     # END PROBLEM 3
     def __str__(self):
         return str(Pair('lambda', Pair(self.formals, self.body)))
@@ -359,7 +370,7 @@ class MacroProcedure(Procedure):
         if len(args) != len(self.formals):
             raise SchemeError(f'MacroProcedure args dismatch, {args}')
         subframe = self.env.create_subframe(self.formals, args)
-        temp = scheme_spform('begin', self.body, subframe)
+        temp = scheme_eval(Pair('begin', self.body), subframe)
         return scheme_eval(temp, cur_env)
 
     def __str__(self):
@@ -530,6 +541,15 @@ class MuProcedure(Procedure):
 
 
 # Make classes/functions for creating tail recursive programs here?
+class Unevaluated:
+    """An unevaluated expression with it's environment"""
+    def __init__(self, expr, env):
+        self.expr = expr
+        self.env = env
+
+    def __repr__(self):
+        return f'Object Unevaluated: expr: {self.expr}\nenv: {self.env}'
+
 
 def complete_apply(procedure, args, env):
     """Apply procedure to args in env; ensure the result is not an Unevaluated.
@@ -537,12 +557,27 @@ def complete_apply(procedure, args, env):
     if you attempt the optional questions."""
     val = scheme_apply(procedure, args, env)
     # Add stuff here?
+    if isinstance(val, Unevaluated):
+        val = scheme_eval(val.expr, val.env)
     return val
 
 # BEGIN PROBLEM 8
 "*** YOUR CODE HERE ***"
+def optimize_tail_calls(original_scheme_eval):
+    """"""
+    def optimized_eval(expr, env, tail=False):
+        if tail and not slef_evaluate(expr) and not isinstance(expr, str):
+            return Unevaluated(expr, env)
+        
+        result = Unevaluated(expr, env)
+        while isinstance(result, Unevaluated):
+            expr, env = result.expr, result.env
+            result = original_scheme_eval(expr, env)
+        return result
+    return optimized_eval
 # END PROBLEM 8
-
+orgin_scheme_eval = scheme_eval
+scheme_eval = optimize_tail_calls(scheme_eval)
 
 ####################
 # Extra Procedures #

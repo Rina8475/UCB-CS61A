@@ -92,7 +92,6 @@
            ))
         (else
          ; BEGIN PROBLEM 7
-         ;  (pair (car expr) (map let-to-lambda (cdr expr)))
          ; `(,(car expr) ,@(map let-to-lambda (cdr expr)))
          (cons (car expr) (map let-to-lambda (cdr expr)))
          ; END PROBLEM 7
