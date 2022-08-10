@@ -37,14 +37,23 @@ def match_k(k):
     >>> match_k(2)(123123)
     False
     """
-    ____________________________
-        ____________________________
-        while ____________________________:
-            if ____________________________:
-                return ____________________________
-            ____________________________
-        ____________________________
-    ____________________________
+    def match_num(x):
+        val = x % pow(10, k)
+        while x > 0:
+            if x % pow(10, k) != val:
+                return False
+            x //= pow(10, k)
+        return True
+    return match_num
+
+    # ____________________________
+    #     ____________________________
+    #     while ____________________________:
+    #         if ____________________________:
+    #             return ____________________________
+    #         ____________________________
+    #     ____________________________
+    # ____________________________
 
 
 
@@ -94,12 +103,22 @@ def chain_function():
     """
     def g(x, y):
         def h(n):
-            if ____________________________:
-                return ____________________________
+            if n == y + 1:
+                return g(x, n)
             else:
-                ____________________________
-        return ____________________________
-    return ____________________________
+                print(y+1, x)
+                return g(x+1, n)
+        return h
+    return lambda x: g(1, x)
+    
+    # def g(x, y):
+    #     def h(n):
+    #         if ____________________________:
+    #             return ____________________________
+    #         else:
+    #             ____________________________
+    #     return ____________________________
+    # return ____________________________
 
 
 
@@ -139,10 +158,16 @@ def cs61nay(combiner, n):
     >>> f(2021)
     2021
     """
-    if ____________________________:
-        return ____________________________
-    else:
-        return ____________________________
+    def func(a, b):
+        if b == 0:
+            return a
+        return lambda x: func(combiner(a, x), b-1)
+    return lambda x: func(x, n-1)
+
+    # if ____________________________:
+    #     return ____________________________
+    # else:
+    #     return ____________________________
 
 # ! Difficulty ***
 # ! Part B
@@ -155,8 +180,10 @@ from operator import sub, add, mul
 
 compose = lambda f, g: lambda x: f(g(x))
 
-print(compose(cs61nay(sub, ____), compose(cs61nay(mul, ____)(2),
-      cs61nay(pow, 2)(10))(3))(____)(____))
+print(compose(cs61nay(sub, 2), compose(cs61nay(mul, 3)(2),
+      cs61nay(pow, 2)(10))(3))(1)(-21))
+# print(compose(cs61nay(sub, ____), compose(cs61nay(mul, ____)(2),
+#       cs61nay(pow, 2)(10))(3))(____)(____))
 
 # ! Difficulty **
 # ! Part C
@@ -164,7 +191,7 @@ print(compose(cs61nay(sub, ____), compose(cs61nay(mul, ____)(2),
 # ! RESTRICTION: 
 # You may not use the python ternary operator (the one line if/else statment).
 
-cs61NAY = ____________________________
+cs61NAY = lambda f, x: cs61nay(f, x)        # I'm not sure if this is right
 
 # This syntax adds a doctest to a lambda, which can be run using `test(cs61NAY)`
 # after clicking Run in 61A Code or `python3 -m doctest -v examprep02.py`
@@ -223,14 +250,24 @@ def stacklist():
     8
     """
     g = lambda i: "Error: out of bounds!"
-    def f(value, g=g, y=____________________________):
-        ____________________________
+    def f(value, g=g, y=0):
+        h = g
         def g(i):
-            if ____________________________:
-                return ____________________________
-            return ____________________________
-        return ____________________________
+            if i == y:
+                return value
+            return h(i)
+        return (g, y+1)
     return f, g
+    
+    # g = lambda i: "Error: out of bounds!"
+    # def f(value, g=g, y=____________________________):
+    #     ____________________________
+    #     def g(i):
+    #         if ____________________________:
+    #             return ____________________________
+    #         return ____________________________
+    #     return ____________________________
+    # return f, g
 
 # ! Part B
 # Build on your solution to the previous question to implement insert functionality! As the name 
@@ -264,16 +301,37 @@ def stacklisted():
     >>> get(3)
     4
     """
-    # Assume f and g are defined correctly from the previous question
-    def h(y, value, g, n):
-        e = ____________________________
+    g = lambda i: "Error: out of bounds!"
+    def f(value, g=g, y=0):
+        h = g
         def g(i):
-            if ____________________________:
-                return ____________________________
-            return ____________________________
-        k =____________________________
-        while k < ____________________________:
-            g, ret = f(______,_______________________,______)
+            if i == y:
+                return value
+            return h(i)
+        return (g, y+1)
+    
+    def h(y, value, g, n):
+        e = g
+        def g(i):
+            if i == y:
+                return value
+            return e(i)
+        k = y
+        while k < n:
+            g, ret = f(e(k), g, k+1)
             k += 1
         return g, ret
     return f, g, h
+    # Assume f and g are defined correctly from the previous question
+    # def h(y, value, g, n):
+    #     e = ____________________________
+    #     def g(i):
+    #         if ____________________________:
+    #             return ____________________________
+    #         return ____________________________
+    #     k =____________________________
+    #     while k < ____________________________:
+    #         g, ret = f(______,_______________________,______)
+    #         k += 1
+    #     return g, ret
+    # return f, g, h

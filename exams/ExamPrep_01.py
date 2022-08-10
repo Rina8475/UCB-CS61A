@@ -30,13 +30,22 @@ def get_k_run_starter(n, k):
     """
     i = 0
     final = None
-    while ____________________________:
-        while ____________________________:
-            ____________________________
-        final = ____________________________
-        i = ____________________________
-        n = ____________________________
+    while i <= k:
+        while n >= 10 and n % 10 > (n // 10) % 10:
+            n //= 10
+        final = n % 10
+        i = i + 1
+        n = n // 10
     return final
+    # i = 0
+    # final = None
+    # while ____________________________:
+    #     while ____________________________:
+    #         ____________________________
+    #     final = ____________________________
+    #     i = ____________________________
+    #     n = ____________________________
+    # return final
 
 
 
@@ -71,16 +80,26 @@ def best_k_segmenter(k, score):
     >>> best_k_segmenter(3, lambda x: (x // 10) % 10)(192837465)
     192
     """
-    partitioner = lambda x: (________________, ________________)
+    partitioner = lambda x: (x // pow(10, k), x % pow(10, k))
     def best_getter(n):
         assert n > 0
         best_seg = None
-        while __________________:
+        while n > 0:
             n, seg = partitioner(n)
-            if __________________:
+            if best_seg == None or score(seg) > score(best_seg):
                 best_seg = seg
         return best_seg
     return best_getter
+    # partitioner = lambda x: (________________, ________________)
+    # def best_getter(n):
+    #     assert n > 0
+    #     best_seg = None
+    #     while __________________:
+    #         n, seg = partitioner(n)
+    #         if __________________:
+    #             best_seg = seg
+    #     return best_seg
+    # return best_getter
 
 
 
@@ -106,12 +125,20 @@ def div_by_primes_under(n):
     False
     """
     checker = lambda x: False
-    i = ____________________________
-    while ____________________________:
+    i = 2
+    while i <= n:
         if not checker(i):
-            checker = ____________________________
-        i = ____________________________
-    return ____________________________
+            checker = (lambda f, a: lambda x: x % a == 0 or f(x))(checker, i)
+        i = i + 1
+    return checker
+
+    # checker = lambda x: False
+    # i = ____________________________
+    # while ____________________________:
+    #     if not checker(i):
+    #         checker = ____________________________
+    #     i = ____________________________
+    # return ____________________________
 
 
 def div_by_primes_under_no_lambda(n):
@@ -127,16 +154,28 @@ def div_by_primes_under_no_lambda(n):
     """
     def checker(x):
         return False
-    i = ____________________________
-    while ____________________________:
+    i = 2
+    while i <= n:
         if not checker(i):
-            def outer(____________________________):
-                def inner(____________________________):
-                    return ____________________________
-                return ____________________________
-            checker = ____________________________
-        i = ____________________________
-    return ____________________________
+            def outer(f, a):
+                def inner(x):
+                    return x % a == 0 or f(x)
+                return inner
+            checker = outer(checker, i)
+        i = i + 1
+    return checker
+    # def checker(x):
+    #     return False
+    # i = ____________________________
+    # while ____________________________:
+    #     if not checker(i):
+    #         def outer(____________________________):
+    #             def inner(____________________________):
+    #                 return ____________________________
+    #             return ____________________________
+    #         checker = ____________________________
+    #     i = ____________________________
+    # return ____________________________
 
 
 
@@ -168,10 +207,19 @@ def three_memory(n):
     """
     def f(x, y, z):
         def g(i):
-            if ____________________________:
-                ____________________________
+            if i == x:
+                print("Found")
             else:
-                ____________________________
-            return ____________________________
-        return ____________________________
+                print("Not found")
+            return f(y, z, i)
+        return g
     return f(None, None, n)
+    # def f(x, y, z):
+    #     def g(i):
+    #         if ____________________________:
+    #             ____________________________
+    #         else:
+    #             ____________________________
+    #         return ____________________________
+    #     return ____________________________
+    # return f(None, None, n)

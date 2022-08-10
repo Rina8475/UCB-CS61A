@@ -1,9 +1,6 @@
 ############################## Q1 ##########################################
 # ! Difficulty: **
 # ? Part A
-from zmq import has
-
-
 def funcs(link):
     """
     >>> t = Tree(1, [Tree(2,
